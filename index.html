@@ -1,0 +1,174 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Agendamento de Vistorias</title>
+  <style>
+    body {
+      font-family: Arial, sans-serif;
+      margin: 20px;
+    }
+    table {
+      width: 100%;
+      border-collapse: collapse;
+    }
+    table, th, td {
+      border: 1px solid black;
+    }
+    th, td {
+      padding: 10px;
+      text-align: center;
+    }
+    th {
+      background-color: #f2f2f2;
+    }
+    .day {
+      width: 20%;
+    }
+    .form-container {
+      margin-bottom: 20px;
+    }
+  </style>
+</head>
+<body>
+  <h1>Agendamento de Vistorias</h1>
+
+  <div class="form-container">
+    <label for="vendedor">Nome do Vendedor:</label>
+    <input type="text" id="vendedor" required>
+    <br><br>
+
+    <label for="placa">Placa do Carro:</label>
+    <input type="text" id="placa" required>
+    <br><br>
+
+    <label for="dia">Dia da Semana:</label>
+    <select id="dia">
+      <option value="Segunda-feira">Segunda-feira</option>
+      <option value="Terça-feira">Terça-feira</option>
+      <option value="Quarta-feira">Quarta-feira</option>
+      <option value="Quinta-feira">Quinta-feira</option>
+      <option value="Sexta-feira">Sexta-feira</option>
+    </select>
+    <br><br>
+
+    <label for="hora">Hora:</label>
+    <select id="hora">
+      <option value="9">9h</option>
+      <option value="11">11h</option>
+      <option value="13">13h</option>
+      <option value="14">14h</option>
+      <option value="15">15h</option>
+      <option value="16">16h</option>
+    </select>
+    <br><br>
+
+    <button onclick="adicionarVistoria()">Agendar Vistoria</button>
+  </div>
+
+  <button onclick="resetarLista()">Resetar Lista</button>
+
+  <table>
+    <thead>
+      <tr>
+        <th class="day">Segunda-feira</th>
+        <th class="day">Terça-feira</th>
+        <th class="day">Quarta-feira</th>
+        <th class="day">Quinta-feira</th>
+        <th class="day">Sexta-feira</th>
+      </tr>
+    </thead>
+    <tbody>
+      <tr id="schedule">
+        <td id="segunda"></td>
+        <td id="terca"></td>
+        <td id="quarta"></td>
+        <td id="quinta"></td>
+        <td id="sexta"></td>
+      </tr>
+    </tbody>
+  </table>
+
+  <script>
+    const vistorias = {
+      'Segunda-feira': {},
+      'Terça-feira': {},
+      'Quarta-feira': {},
+      'Quinta-feira': {},
+      'Sexta-feira': {}
+    };
+
+    function adicionarVistoria() {
+      const vendedor = document.getElementById('vendedor').value;
+      const placa = document.getElementById('placa').value;
+      const dia = document.getElementById('dia').value;
+      const hora = document.getElementById('hora').value;
+
+      if (!vendedor || !placa) {
+        alert('Preencha todos os campos!');
+        return;
+      }
+
+      if (vistorias[dia][hora]) {
+        alert('Este horário já está ocupado!');
+        return;
+      }
+
+      const novaVistoria = `${vendedor} - Placa: ${placa} às ${hora}h`;
+      vistorias[dia][hora] = novaVistoria;
+
+      switch (dia) {
+        case 'Segunda-feira':
+          document.getElementById('segunda').innerText += novaVistoria + '\n';
+          break;
+        case 'Terça-feira':
+          document.getElementById('terca').innerText += novaVistoria + '\n';
+          break;
+        case 'Quarta-feira':
+          document.getElementById('quarta').innerText += novaVistoria + '\n';
+          break;
+        case 'Quinta-feira':
+          document.getElementById('quinta').innerText += novaVistoria + '\n';
+          break;
+        case 'Sexta-feira':
+          document.getElementById('sexta').innerText += novaVistoria + '\n';
+          break;
+      }
+
+      // Limpa os campos de entrada
+      document.getElementById('vendedor').value = '';
+      document.getElementById('placa').value = '';
+
+      // Salva no banco de dados
+      fetch('/api/adicionarVistoria', {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json'
+        },
+        body: JSON.stringify({ vendedor, placa, dia, hora })
+      });
+    }
+
+    function resetarLista() {
+      
+      for (const dia in vistorias) {
+        vistorias[dia] = {};
+      }
+
+      
+      document.getElementById('segunda').innerText = '';
+      document.getElementById('terca').innerText = '';
+      document.getElementById('quarta').innerText = '';
+      document.getElementById('quinta').innerText = '';
+      document.getElementById('sexta').innerText = '';
+
+      
+      fetch('/api/resetarVistorias', {
+        method: 'POST'
+      });
+    }
+  </script>
+</body>
+</html>
+
